@@ -1,4 +1,9 @@
 #include <cstdio>
+
+#if defined(_MSC_VER)
+// nghttp2 defaults to int
+typedef int ssize_t;
+#endif
 #include <nghttp2/nghttp2.h>
 #include <nghttp2/nghttp2ver.h>
 

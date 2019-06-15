@@ -10,7 +10,7 @@ if __name__ == "__main__":
     builder = build_template_default.get_builder()
 
     for item in copy.copy(builder.items):
-        if item.settings["compiler"] == "Visual Studio" or True:
+        if item.settings["compiler"] == "Visual Studio":
             new_options = copy.copy(item.options)
             new_options["nghttp2:with_app"] = False
             builder.add(settings=item.settings, options=new_options,

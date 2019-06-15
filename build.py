@@ -13,6 +13,7 @@ if __name__ == "__main__":
         if item.settings["compiler"] == "Visual Studio":
             new_options = copy.copy(item.options)
             new_options["nghttp2:with_app"] = False
+            new_options["nghttp2:with_hpack"] = False
             builder.add(settings=item.settings, options=new_options,
                         env_vars=item.env_vars, build_requires=item.build_requires)
 

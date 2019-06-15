@@ -70,7 +70,7 @@ class Nghttp2Conan(ConanFile):
         cmake.definitions["WITH_JEMALLOC"] = "OFF"
         cmake.definitions["WITH_SPDYLAY"] = "OFF"
 
-        cmake.defnitions["ENABLE_ASIO_LIB"] = "ON" if self.options.with_asio else "OFF"
+        cmake.definitions["ENABLE_ASIO_LIB"] = "ON" if self.options.with_asio else "OFF"
 
         if self.options.with_app:
             cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath

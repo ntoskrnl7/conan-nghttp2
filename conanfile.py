@@ -70,6 +70,9 @@ class Nghttp2Conan(ConanFile):
         cmake.definitions["WITH_JEMALLOC"] = "OFF"
         cmake.definitions["WITH_SPDYLAY"] = "OFF"
 
+        cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath
+        cmake.definitions['ZLIB_ROOT'] = self.deps_cpp_info['zlib'].rootpath
+
         cmake.configure()
         return cmake
 

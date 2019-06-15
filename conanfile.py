@@ -40,11 +40,11 @@ class Nghttp2Conan(ConanFile):
             raise ConanInvalidConfiguration("Build with asio is not supported yet")
 
     def requirements(self):
+        self.requires.add("zlib/1.2.11@conan/stable")
         if self.options.with_app:
             self.requires.add("OpenSSL/1.0.2r@conan/stable")
             self.requires.add("c-ares/1.15.0@conan/stable")
             self.requires.add("libev/4.25@bincrafters/stable")
-            self.requires.add("zlib/1.2.11@conan/stable")
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
 

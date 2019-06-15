@@ -55,11 +55,6 @@ class Nghttp2Conan(ConanFile):
         extracted_folder = "nghttp2-{0}".format(self.version)
         os.rename(extracted_folder, self._source_subfolder)
 
-        os.rename(os.path.join(self._source_subfolder, "CMakeLists.txt"),
-                  os.path.join(self._source_subfolder, "CMakeListsOriginal.txt"))
-        shutil.copy("CMakeLists.txt",
-                    os.path.join(self._source_subfolder, "CMakeLists.txt"))
-
     def _configure_cmake(self):
         cmake = CMake(self)
 
@@ -75,7 +70,7 @@ class Nghttp2Conan(ConanFile):
         cmake.definitions["WITH_JEMALLOC"] = "OFF"
         cmake.definitions["WITH_SPDYLAY"] = "OFF"
 
-        cmake.configure(source_dir=self._source_subfolder)
+        cmake.configure()
         return cmake
 
     def _build_with_autotools(self):

@@ -36,8 +36,6 @@ class Nghttp2Conan(ConanFile):
     def config_options(self):
         if self.settings.os == 'Windows':
             del self.options.fPIC
-        if self.options.with_asio:
-            raise ConanInvalidConfiguration("Build with asio is not supported yet")
 
     def requirements(self):
         self.requires.add("zlib/1.2.11@conan/stable")
@@ -48,6 +46,11 @@ class Nghttp2Conan(ConanFile):
             self.requires.add("libxml2/2.9.9@bincrafters/stable")
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
+        if self.options.with_asio:
+            self.requires.add("boost/1.69.0@conan/stable")
+            # self.requires.add("boost_asio/1.69.0@bincrafters/stable")
+            # self.requires.add("boost_system/1.69.0@bincrafters/stable")
+            # self.requires.add("boost_thread/1.69.0@bincrafters/stable")
 
     def source(self):
         checksum = "8f306995b2805f9f62e9bc042bbf48eb64f6d30b25c04f76cb75d2977d1dd994"
@@ -75,6 +78,8 @@ class Nghttp2Conan(ConanFile):
 
         if self.options.with_app:
             cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath
+        if self.options.with_asio:
+            cmake.definitions['BOOST_ROOT'] = self.deps_cpp_info['boost'].rootpath
         cmake.definitions['ZLIB_ROOT'] = self.deps_cpp_info['zlib'].rootpath
 
         cmake.configure()
@@ -111,7 +116,12 @@ class Nghttp2Conan(ConanFile):
             args.append('--without-jemalloc')
             args.append('--without-systemd')
             args.append('--without-libxml2')
-            args.append('--without-boost')
+
+            if self.options.with_asio:
+                args.append('--enable-asio-lib')
+                args.append('--with-boost=' + self.deps_cpp_info['boost'].rootpath)
+            else:
+                args.append('--without-boost')
 
             env_build.configure(args=args)
             env_build.make()

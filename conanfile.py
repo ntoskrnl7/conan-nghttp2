@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
-from conans.errors import ConanInvalidConfiguration
 import os
 import shutil
 

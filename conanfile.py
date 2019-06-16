@@ -45,6 +45,7 @@ class Nghttp2Conan(ConanFile):
             self.requires.add("OpenSSL/1.0.2r@conan/stable")
             self.requires.add("c-ares/1.15.0@conan/stable")
             self.requires.add("libev/4.25@bincrafters/stable")
+            self.requires.add("libxml2/2.9.9@bincrafters/stable")
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
 

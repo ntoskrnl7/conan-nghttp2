@@ -16,7 +16,10 @@ if __name__ == "__main__":
             new_options["nghttp2:with_hpack"] = False
             builder.add(settings=item.settings, options=new_options,
                         env_vars=item.env_vars, build_requires=item.build_requires)
+
+    for item in copy.copy(builder.items):
         # add asio builds for specific configurations which do not miss dependencies
+        # it will work with Visual Studio when with_app is False (conf added before)
         if (item.settings["compiler"] == "clang" and \
             item.settings["compiler.version"] == "7.0" and \
             item.settings["build_type"] == "Release") or \

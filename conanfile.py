@@ -46,7 +46,7 @@ class Nghttp2Conan(ConanFile):
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
         if self.options.with_asio:
-            self.requires.add("boost/1.69.0@conan/stable")
+            self.requires.add("boost/1.68.0@conan/stable")
             # self.requires.add("boost_asio/1.69.0@bincrafters/stable")
             # self.requires.add("boost_system/1.69.0@bincrafters/stable")
             # self.requires.add("boost_thread/1.69.0@bincrafters/stable")

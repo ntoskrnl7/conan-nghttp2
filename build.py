@@ -22,10 +22,7 @@ if __name__ == "__main__":
         # it will work with Visual Studio when with_app is False (conf added before)
         if (item.settings["compiler"] == "clang" and \
             item.settings["compiler.version"] == "7.0" and \
-            item.settings["build_type"] == "Release") or \
-           (item.settings["compiler"] == "Visual Studio" and \
-             item.settings["compiler.version"] == "15" and \
-             item.settings["build_type"] == "Release"):
+            item.settings["build_type"] == "Release"):
             new_options = copy.copy(item.options)
             new_options["nghttp2:with_asio"] = True
             builder.add(settings=item.settings, options=new_options,

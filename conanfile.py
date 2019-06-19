@@ -146,6 +146,11 @@ class Nghttp2Conan(ConanFile):
         shutil.rmtree(os.path.join(self.package_folder, 'share', 'man'), ignore_errors=True)
         shutil.rmtree(os.path.join(self.package_folder, 'share', 'doc'), ignore_errors=True)
 
+        for la_name in ('libnghttp2.la', 'libnghttp2_asio.la'):
+            la_file = os.path.join(self.package_folder, "lib", la_name)
+            if os.path.isfile(la_file):
+                os.unlink(la_file)
+
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         if self.settings.compiler == 'Visual Studio':

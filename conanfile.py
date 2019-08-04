@@ -25,9 +25,15 @@ util_cpp_parse_openssl_asn1_time_print_code = """
 #else  // !_WIN32
 """
 
+boost_without_lib_list = ['math', 'wave', 'container', 'contract', 'exception', 'graph', 'iostreams', 'locale', 'log',
+            'program_options', 'random', 'regex', 'mpi', 'serialization',
+            'coroutine', 'fiber', 'context', 'timer', 'chrono', 'date_time',
+            'atomic', 'filesystem', 'graph_parallel', 'python',
+            'stacktrace', 'test', 'type_erasure']
+
 class Nghttp2Conan(ConanFile):
     name = "nghttp2"
-    version = "1.38.0"
+    version = "1.39.0"
     description = "HTTP/2 C Library and tools"
     topics = ("conan", "http")
     url = "https://github.com/bincrafters/conan-nghttp2"
@@ -44,33 +50,39 @@ class Nghttp2Conan(ConanFile):
                "with_app": [True, False],
                "with_hpack": [True, False],
                "with_asio": [True, False]}
-    default_options = {"shared": False,
-                       "fPIC": True,
-                       "with_app": True,
-                       "with_hpack": True,
-                       "with_asio": False}
+
+    default_options = ["shared=False",
+                       "fPIC=True",
+                       "with_app=True",
+                       "with_hpack=True",
+                       "with_asio=False"]
+
+    default_options.extend(["boost:without_%s=True" % libname for libname in boost_without_lib_list])
+    default_options.append("boost:without_system=False")
+    default_options.append("boost:without_thread=False")
+    default_options = tuple(default_options)
 
     _source_subfolder = "source_subfolder"
 
     def config_options(self):
+        for key, value in self.options.items():
+            print(str(key) + ":" + str(value))
         if self.settings.os == 'Windows':
             del self.options.fPIC
         if self.options.with_asio and self.settings.compiler == "Visual Studio":
             raise ConanInvalidConfiguration("Build with asio and MSVC is not supported yet, see upstream bug #589")
-
+        
     def requirements(self):
         self.requires.add("zlib/1.2.11@conan/stable")
         if self.options.with_app:
-            self.requires.add("OpenSSL/1.0.2r@conan/stable")
+            self.requires.add("OpenSSL/1.1.1d@conan/stable")
             self.requires.add("c-ares/1.15.0@conan/stable")
             self.requires.add("libev/4.25@bincrafters/stable")
             self.requires.add("libxml2/2.9.9@bincrafters/stable")
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
         if self.options.with_asio:
-            self.requires.add("boost_asio/1.69.0@bincrafters/stable")
-            self.requires.add("boost_system/1.69.0@bincrafters/stable")
-            self.requires.add("boost_thread/1.69.0@bincrafters/stable")
+            self.requires.add("boost/1.70.0@conan/stable")
 
     def source(self):
         checksum = "8f306995b2805f9f62e9bc042bbf48eb64f6d30b25c04f76cb75d2977d1dd994"
@@ -98,7 +110,6 @@ class Nghttp2Conan(ConanFile):
 
         if self.options.with_app:
             cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath
-        
         cmake.definitions['ZLIB_ROOT'] = self.deps_cpp_info['zlib'].rootpath
 
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder

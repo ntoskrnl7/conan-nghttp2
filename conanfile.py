@@ -82,6 +82,7 @@ class Nghttp2Conan(ConanFile):
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
         if self.options.with_asio:
+            self.requires.add("OpenSSL/1.1.1d@conan/stable")
             self.requires.add("boost/1.70.0@conan/stable")
 
     def source(self):
@@ -108,8 +109,7 @@ class Nghttp2Conan(ConanFile):
 
         cmake.definitions["ENABLE_ASIO_LIB"] = "ON" if self.options.with_asio else "OFF"
 
-        if self.options.with_app:
-            cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath
+        cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath
         cmake.definitions['ZLIB_ROOT'] = self.deps_cpp_info['zlib'].rootpath
 
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder

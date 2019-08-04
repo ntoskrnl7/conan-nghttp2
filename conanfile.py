@@ -85,7 +85,7 @@ class Nghttp2Conan(ConanFile):
             self.requires.add("boost/1.70.0@conan/stable")
 
     def source(self):
-        checksum = "8f306995b2805f9f62e9bc042bbf48eb64f6d30b25c04f76cb75d2977d1dd994"
+        checksum = "71c63c6c74ffd4b7b4eced001f38f29850ec98fe5f72a60319805909e332cf9f"
         source_url = "https://github.com/nghttp2/nghttp2"
         tools.get("{0}/releases/download/v{1}/nghttp2-{1}.tar.bz2".format(source_url, self.version), sha256=checksum)
         extracted_folder = "nghttp2-{0}".format(self.version)

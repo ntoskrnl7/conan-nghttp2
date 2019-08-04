@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
-from conans.errors import ConanInvalidConfiguration
 import os
 import shutil
 
@@ -230,8 +229,6 @@ class Nghttp2Conan(ConanFile):
     def config_options(self):
         if self.settings.os == 'Windows':
             del self.options.fPIC
-        if self.options.with_asio and self.settings.compiler == "Visual Studio":
-            raise ConanInvalidConfiguration("Build with asio and MSVC is not supported yet, see upstream bug #589")
 
     def requirements(self):
         self.requires.add("zlib/1.2.11@conan/stable")

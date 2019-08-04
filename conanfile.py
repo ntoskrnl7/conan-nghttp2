@@ -61,16 +61,16 @@ class Nghttp2Conan(ConanFile):
     def requirements(self):
         self.requires.add("zlib/1.2.11@conan/stable")
         if self.options.with_app:
-            self.requires.add("OpenSSL/1.1.1d@conan/stable")
+            self.requires.add("OpenSSL/1.0.2r@conan/stable")
             self.requires.add("c-ares/1.15.0@conan/stable")
             self.requires.add("libev/4.25@bincrafters/stable")
             self.requires.add("libxml2/2.9.9@bincrafters/stable")
         if self.options.with_hpack:
             self.requires.add("jansson/2.12@bincrafters/stable")
         if self.options.with_asio:
-            self.requires.add("boost_asio/1.70.0@bincrafters/stable")
-            self.requires.add("boost_system/1.70.0@bincrafters/stable")
-            self.requires.add("boost_thread/1.70.0@bincrafters/stable")
+            self.requires.add("boost_asio/1.69.0@bincrafters/stable")
+            self.requires.add("boost_system/1.69.0@bincrafters/stable")
+            self.requires.add("boost_thread/1.69.0@bincrafters/stable")
 
     def source(self):
         checksum = "8f306995b2805f9f62e9bc042bbf48eb64f6d30b25c04f76cb75d2977d1dd994"
@@ -98,6 +98,7 @@ class Nghttp2Conan(ConanFile):
 
         if self.options.with_app:
             cmake.definitions['OPENSSL_ROOT_DIR'] = self.deps_cpp_info['OpenSSL'].rootpath
+        
         cmake.definitions['ZLIB_ROOT'] = self.deps_cpp_info['zlib'].rootpath
 
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder

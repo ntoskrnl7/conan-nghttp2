@@ -33,7 +33,7 @@ boost_without_lib_list = ['math', 'wave', 'container', 'contract', 'exception', 
 
 class Nghttp2Conan(ConanFile):
     name = "nghttp2"
-    version = "1.39.0"
+    version = "1.39.1"
     description = "HTTP/2 C Library and tools"
     topics = ("conan", "http")
     url = "https://github.com/bincrafters/conan-nghttp2"
@@ -85,7 +85,7 @@ class Nghttp2Conan(ConanFile):
             self.requires.add("boost/1.70.0@conan/stable")
 
     def source(self):
-        checksum = "71c63c6c74ffd4b7b4eced001f38f29850ec98fe5f72a60319805909e332cf9f"
+        checksum = "2a84727fd5d42d3b4dbbb86909ee47976a78e08cd039150d1f74f879079cf5ef"
         source_url = "https://github.com/nghttp2/nghttp2"
         tools.get("{0}/releases/download/v{1}/nghttp2-{1}.tar.bz2".format(source_url, self.version), sha256=checksum)
         extracted_folder = "nghttp2-{0}".format(self.version)
@@ -174,7 +174,7 @@ class Nghttp2Conan(ConanFile):
             tools.replace_in_file(
                 'source_subfolder/src/util.cc',
                 '#include "timegm.h"',
-                '#include "timegm.h"\ninline struct tm *gmtime_r(time_t const *timep, struct tm *tmp) { if (gmtime_s(tmp, timep) == 0) return tmp; return 0;}\ninline struct tm *localtime_r(time_t const *timep, struct tm *tmp) { if (localtime_s(tmp, timep) == 0) return tmp; return 0; }')
+                '#include "timegm.h"\n#ifdef _WIN32\n#define daemon(a,b)    (1)\ninline struct tm *gmtime_r(time_t const *timep, struct tm *tmp) { if (gmtime_s(tmp, timep) == 0) return tmp; return 0;}\ninline struct tm *localtime_r(time_t const *timep, struct tm *tmp) { if (localtime_s(tmp, timep) == 0) return tmp; return 0; }\n#endif')
             tools.replace_in_file(
                 'source_subfolder/src/util.cc',
                 'new bt::time_input_facet("%a, %d %b %Y %H:%M:%S GMT"));',

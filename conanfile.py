@@ -1,9 +1,153 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
-from conans.errors import ConanInvalidConfiguration
 import os
 import shutil
+
+getotp_h = """
+/* Declarations for getopt.
+   Copyright (C) 1989-2019 Free Software Foundation, Inc.
+   NOTE: The canonical source of this file is maintained with the GNU C Library.
+   Bugs can be reported to bug-glibc@gnu.org.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301,
+   USA.  */
+#ifndef _GETOPT_H
+#define _GETOPT_H 1
+#ifdef	__cplusplus
+extern "C" {
+#endif
+/* For communication from `getopt' to the caller.
+   When `getopt' finds an option that takes an argument,
+   the argument value is returned here.
+   Also, when `ordering' is RETURN_IN_ORDER,
+   each non-option ARGV-element is returned here.  */
+extern char *optarg;
+/* Index in ARGV of the next element to be scanned.
+   This is used for communication to and from the caller
+   and for communication between successive calls to `getopt'.
+   On entry to `getopt', zero means this is the first call; initialize.
+   When `getopt' returns -1, this is the index of the first of the
+   non-option elements that the caller should itself scan.
+   Otherwise, `optind' communicates from one call to the next
+   how much of ARGV has been scanned so far.  */
+extern int optind;
+/* Callers store zero here to inhibit the error message `getopt' prints
+   for unrecognized options.  */
+extern int opterr;
+/* Set to an option character which was unrecognized.  */
+extern int optopt;
+/* Describe the long-named options requested by the application.
+   The LONG_OPTIONS argument to getopt_long or getopt_long_only is a vector
+   of `struct option' terminated by an element containing a name which is
+   zero.
+   The field `has_arg' is:
+   no_argument		(or 0) if the option does not take an argument,
+   required_argument	(or 1) if the option requires an argument,
+   optional_argument 	(or 2) if the option takes an optional argument.
+   If the field `flag' is not NULL, it points to a variable that is set
+   to the value given in the field `val' when the option is found, but
+   left unchanged if the option is not found.
+   To have a long-named option do something other than set an `int' to
+   a compiled-in constant, such as set a value from `optarg', set the
+   option's `flag' field to zero and its `val' field to a nonzero
+   value (the equivalent single-letter option character, if there is
+   one).  For long options that have a zero `flag' field, `getopt'
+   returns the contents of the `val' field.  */
+struct option
+{
+#if defined (__STDC__) && __STDC__
+  const char *name;
+#else
+  char *name;
+#endif
+  /* has_arg can't be an enum because some compilers complain about
+     type mismatches in all the code that assumes it is an int.  */
+  int has_arg;
+  int *flag;
+  int val;
+};
+/* Names for the values of the `has_arg' field of `struct option'.  */
+#define	no_argument		0
+#define required_argument	1
+#define optional_argument	2
+#if defined (__STDC__) && __STDC__
+/* HAVE_DECL_* is a three-state macro: undefined, 0 or 1.  If it is
+   undefined, we haven't run the autoconf check so provide the
+   declaration without arguments.  If it is 0, we checked and failed
+   to find the declaration so provide a fully prototyped one.  If it
+   is 1, we found it so don't provide any declaration at all.  */
+#if !HAVE_DECL_GETOPT
+#if defined (__GNU_LIBRARY__) || defined (HAVE_DECL_GETOPT)
+/* Many other libraries have conflicting prototypes for getopt, with
+   differences in the consts, in unistd.h.  To avoid compilation
+   errors, only prototype getopt for the GNU C library.  */
+extern int getopt (int argc, char *const *argv, const char *shortopts);
+#else
+#ifndef __cplusplus
+extern int getopt ();
+#endif /* __cplusplus */
+#endif
+#endif /* !HAVE_DECL_GETOPT */
+extern int getopt_long (int argc, char *const *argv, const char *shortopts,
+		        const struct option *longopts, int *longind);
+extern int getopt_long_only (int argc, char *const *argv,
+			     const char *shortopts,
+		             const struct option *longopts, int *longind);
+/* Internal only.  Users should not call this directly.  */
+extern int _getopt_internal (int argc, char *const *argv,
+			     const char *shortopts,
+		             const struct option *longopts, int *longind,
+			     int long_only);
+#else /* not __STDC__ */
+extern int getopt ();
+extern int getopt_long ();
+extern int getopt_long_only ();
+extern int _getopt_internal ();
+#endif /* __STDC__ */
+#ifdef	__cplusplus
+}
+#endif
+#endif /* getopt.h */"""
+
+define_ssize_t_code = """
+#include <sys/types.h>
+#ifndef ssize_t
+#if !defined(_SYS_TYPES_H_) && !defined(_SYS_TYPES_H)
+#define ssize_t int
+#endif
+#endif
+"""
+
+define_msvc_ssize_t_code = """
+#include <sys/types.h>
+#ifndef _SSIZE_T_DEFINED
+#define _SSIZE_T_DEFINED
+#undef ssize_t
+#ifdef _WIN64
+  typedef __int64 ssize_t;
+#else
+  typedef int ssize_t;
+#endif /* _WIN64 */
+#endif /* _SSIZE_T_DEFINED */
+"""
+
+cmake_msvc_ssize_t = """
+  check_type_size("size_t" SIZEOF_SIZE_T)
+  if(SIZEOF_SIZE_T EQUAL 4)
+	set(ssize_t int)
+  else()
+	set(ssize_t __int64)
+  endif()"""
 
 util_cpp_asn1_ptime_locale_code = """
 static const std::locale
@@ -69,9 +213,7 @@ class Nghttp2Conan(ConanFile):
             print(str(key) + ":" + str(value))
         if self.settings.os == 'Windows':
             del self.options.fPIC
-        if self.options.with_asio and self.settings.compiler == "Visual Studio":
-            raise ConanInvalidConfiguration("Build with asio and MSVC is not supported yet, see upstream bug #589")
-        
+
     def requirements(self):
         self.requires.add("zlib/1.2.11@conan/stable")
         if self.options.with_app:
@@ -115,6 +257,38 @@ class Nghttp2Conan(ConanFile):
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
         cmake.definitions["CMAKE_INSTALL_LIBDIR"] = "lib"
         cmake.definitions["CMAKE_INSTALL_BINDIR"] = "bin"
+
+        if self.settings.compiler == "Visual Studio":
+            tools.replace_in_file(
+                'source_subfolder/src/CMakeLists.txt',
+                'target_link_libraries(nghttp2_asio',
+                'target_link_libraries(nghttp2_asio\n\t\tcrypt32')
+                
+            tools.replace_in_file(
+                'source_subfolder/src/asio_common.cc',
+                '#include "asio_common.h"',
+                '#include "asio_common.h"\n#include <io.h>')
+
+            tools.replace_in_file(
+                'source_subfolder/src/memchunk.h',
+                'uint8_t *pos, *last;',
+                '#if defined(_MSC_VER) \n  std::_Array_iterator<uint8_t, N> pos;\n  std::_Array_iterator<uint8_t, N> last;\n#else\n  uint8_t *pos, *last;\n#endif')
+
+            tools.save("source_subfolder/getopt.h", getotp_h)
+            self.settings.arch
+            tools.replace_in_file(
+                'source_subfolder/CMakeLists.txt',
+                'set(ssize_t int)',
+                cmake_msvc_ssize_t)
+            
+            cmake.definitions["CONAN_CXX_FLAGS"] = "/DNOMINMAX /Zc:__cplusplus"
+            cmake.definitions["CONAN_C_FLAGS"] = "/DNOMINMAX /Zc:__cplusplus"
+            
+            tools.replace_in_file(
+                'source_subfolder/lib/includes/nghttp2/nghttp2.h',
+                '#include <sys/types.h>',
+                define_msvc_ssize_t_code)
+        # end if self.settings.compiler == "Visual Studio":
         cmake.configure()
         return cmake
 
